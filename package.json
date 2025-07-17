@@ -1,0 +1,30 @@
+{
+  "name": "api-status-dashboard",
+  "version": "1.0.0",
+  "description": "API Status Dashboard with Cloudflare Workers and React",
+  "scripts": {
+    "install:all": "npm install && cd worker && npm install && cd ../frontend && npm install",
+    "dev:worker": "cd worker && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:worker\" \"npm run dev:frontend\"",
+    "build:worker": "cd worker && npm run type-check",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:worker && npm run build:frontend",
+    "deploy:worker": "cd worker && npm run deploy",
+    "type-check": "cd worker && npm run type-check"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "cloudflare",
+    "worker",
+    "api",
+    "monitoring",
+    "react",
+    "typescript",
+    "dashboard"
+  ],
+  "author": "",
+  "license": "MIT"
+} 
