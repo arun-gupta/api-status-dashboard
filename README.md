@@ -68,6 +68,14 @@ This project follows a **serverless architecture** with clear separation between
 - **Persistent Storage**: Cloudflare KV for storing uptime logs
 - **Auto-refresh**: Dashboard updates every 30 seconds
 
+## Screenshots
+
+### Client-side Dashboard
+![Client Dashboard](docs/client-screenshot.png)
+
+### Server-side Monitoring (Cloudflare Worker)
+![Server Monitoring](docs/server-screenshot.png)
+
 ## Project Structure
 
 ```
