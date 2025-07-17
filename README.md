@@ -2,6 +2,60 @@
 
 A comprehensive web application that monitors public APIs (OpenAI, GitHub, Stripe, HuggingFace, DockerHub, OpenWeatherMap) using Cloudflare Workers and displays real-time status information.
 
+## 🌐 Live Demo
+
+**View the live dashboard**: [https://api-status-monitor.arungupta.workers.dev/](https://api-status-monitor.arungupta.workers.dev/)
+
+## Architecture Overview
+
+This project follows a **serverless architecture** with clear separation between client and server components:
+
+### 🖥️ Frontend (Client)
+- **Technology**: React + TypeScript + Tailwind CSS
+- **Purpose**: User interface for displaying API status information
+- **Features**:
+  - Real-time status display with auto-refresh (30s intervals)
+  - Manual refresh and trigger monitoring buttons
+  - Responsive design for all devices
+  - Clean, minimal interface similar to status pages
+
+### ⚡ Backend (Server)
+- **Technology**: Cloudflare Workers + TypeScript
+- **Purpose**: API monitoring, data storage, and serving the frontend
+- **Features**:
+  - Scheduled API monitoring (every 5 minutes)
+  - HTTP status checking, latency measurement, rate limit detection
+  - Content validation for expected response formats
+  - Persistent data storage using Cloudflare KV
+  - RESTful API endpoints for frontend communication
+
+### 🔄 Client-Server Communication
+
+```
+┌─────────────────┐    HTTP Requests    ┌──────────────────┐
+│   React App     │ ◄─────────────────► │ Cloudflare Worker│
+│   (Frontend)    │                     │   (Backend)      │
+└─────────────────┘                     └──────────────────┘
+         │                                        │
+         │                                        │
+         ▼                                        ▼
+┌─────────────────┐                     ┌──────────────────┐
+│   Browser       │                     │   Cloudflare KV  │
+│   (Client)      │                     │   (Database)     │
+└─────────────────┘                     └──────────────────┘
+```
+
+**API Endpoints**:
+- `GET /api/status` - Frontend fetches current API status data
+- `POST /api/trigger` - Frontend triggers immediate API monitoring
+- `GET /` - Serves the React application
+
+**Data Flow**:
+1. **Scheduled Monitoring**: Worker runs every 5 minutes to check all APIs
+2. **Data Storage**: Results stored in Cloudflare KV with timestamps
+3. **Frontend Polling**: React app fetches latest data every 30 seconds
+4. **Real-time Updates**: Dashboard displays current status with color-coded indicators
+
 ## Features
 
 - **Real-time API Monitoring**: Pings APIs every 5 minutes using Cloudflare Workers
@@ -172,7 +226,86 @@ You can deploy the frontend to any static hosting service (Vercel, Netlify, etc.
 
 ## Environment Variables
 
-No environment variables are required for basic functionality. The APIs are configured to work with public endpoints or will show appropriate error states for endpoints requiring authentication.
+For APIs that require authentication (OpenAI and Stripe), you can set up API keys as environment variables:
+
+### Local Development Setup
+
+1. **Create a local .env file**:
+   ```bash
+   cd worker
+   cp .env.example .env
+   ```
+
+2. **Edit the .env file** with your actual API keys:
+   ```bash
+   # API Keys for local development
+   OPENAI_API_KEY=sk-your-actual-openai-key-here
+   STRIPE_API_KEY=sk_test_your-actual-stripe-key-here
+   ```
+
+3. **Start local development**:
+   ```bash
+   npm run dev
+   ```
+
+### Production Setup
+
+1. **Via Wrangler CLI**:
+   ```bash
+   cd worker
+   wrangler secret put OPENAI_API_KEY
+   wrangler secret put STRIPE_API_KEY
+   ```
+
+2. **Via Cloudflare Dashboard**:
+   - Go to your Cloudflare Workers dashboard
+   - Select your worker
+   - Go to Settings > Variables
+   - Add the environment variables:
+     - `OPENAI_API_KEY`: Your OpenAI API key
+     - `STRIPE_API_KEY`: Your Stripe secret key
+
+### API Key Requirements
+
+#### OpenAI API Key
+1. **OpenAI Platform**: Go to [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+2. **Sign in or create account**: Use your OpenAI account credentials
+3. **Create new API key**: Click "Create new secret key"
+4. **Copy the key**: The key starts with `sk-` (e.g., `sk-1234567890ef...`)
+5. **Store securely**: Add to your `.env` file or Cloudflare secrets
+
+**Note**: OpenAI API keys are free to create but usage is charged per request. Monitor your usage in the [OpenAI Usage Dashboard](https://platform.openai.com/usage).
+
+#### Stripe API Key
+1. **Stripe Dashboard**: Go to [https://dashboard.stripe.com/apikeys](https://dashboard.stripe.com/apikeys)
+2. **Sign in to Stripe**: Use your Stripe account credentials
+3. **Choose environment**:
+   - **Test mode**: Use `sk_test_...` keys for development (free)
+   - **Live mode**: Use `sk_live_...` keys for production (real transactions)
+4. **Create new key**: Click "Create secret key" or use existing keys
+5. **Copy the key**: The key starts with `sk_test_` or `sk_live_`
+6. **Store securely**: Add to your `.env` file or Cloudflare secrets
+
+**Note**: 
+- Test keys are free and safe to use for development
+- Live keys should only be used in production and kept secure
+- You can view your API usage in the [Stripe Dashboard](https://dashboard.stripe.com/developers)
+
+### Security Notes
+
+- Never commit API keys to version control
+- The `.env` file is already in `.gitignore` and will not be committed
+- Use Wrangler secrets or Cloudflare environment variables for production
+- The worker will use placeholder values if keys are not provided
+- APIs without valid keys will show authentication errors in the dashboard
+
+### Optional APIs
+
+If you don't want to set up API keys, the following APIs will work without authentication:
+- GitHub (public endpoints)
+- HuggingFace (public endpoints)
+- DockerHub (public endpoints)
+- OpenWeatherMap (public endpoints)
 
 ## Contributing
 

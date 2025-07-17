@@ -4,12 +4,14 @@
   "description": "Cloudflare Worker for monitoring public APIs",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --env development",
+    "deploy": "wrangler deploy --env production",
+    "deploy:dev": "wrangler deploy --env development",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20240715.0"
+    "@cloudflare/workers-types": "^4.20240715.0",
+    "dotenv": "^16.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

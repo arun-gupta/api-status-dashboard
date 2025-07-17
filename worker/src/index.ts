@@ -1,9 +1,12 @@
-import { API_ENDPOINTS } from './apis';
+import { createAPIEndpoints } from './apis';
 import { monitorAllAPIs } from './monitor';
 import { APIStatus } from './types';
 
 interface Env {
   API_STATUS_KV: KVNamespace;
+  OPENAI_API_KEY?: string;
+  STRIPE_API_KEY?: string;
+  ENV?: string;
 }
 
 export default {
@@ -47,7 +50,7 @@ export default {
     // Manual trigger endpoint
     if (url.pathname === '/api/trigger' && request.method === 'POST') {
       try {
-        await handleScheduledCheck(env.API_STATUS_KV);
+        await handleScheduledCheck(env);
         return new Response(JSON.stringify({ message: 'Monitoring triggered successfully' }), {
           status: 200,
           headers: {
@@ -166,28 +169,33 @@ export default {
   },
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    await handleScheduledCheck(env.API_STATUS_KV);
+    await handleScheduledCheck(env);
   },
 };
 
-async function handleScheduledCheck(kv: KVNamespace): Promise<void> {
-  const statuses = await monitorAllAPIs(API_ENDPOINTS);
+async function handleScheduledCheck(env: Env): Promise<void> {
+  const apiEndpoints = createAPIEndpoints(env);
+  const statuses = await monitorAllAPIs(apiEndpoints);
   
   for (const status of statuses) {
     const key = `status:${status.name}`;
-    const existingData = await kv.get(key, { type: 'json' }) as APIStatus[] || [];
+    const existingData = await env.API_STATUS_KV.get(key, { type: 'json' }) as APIStatus[] || [];
     
     // Keep only the last 24 entries (one per hour for 24 hours)
     const updatedData = [status, ...existingData.slice(0, 23)];
     
-    await kv.put(key, JSON.stringify(updatedData));
+    await env.API_STATUS_KV.put(key, JSON.stringify(updatedData));
   }
 }
 
 async function getStatusFromKV(kv: KVNamespace): Promise<Record<string, APIStatus[]>> {
   const statusData: Record<string, APIStatus[]> = {};
   
-  for (const endpoint of API_ENDPOINTS) {
+  // We need to get the endpoints to know which APIs to fetch
+  // For now, we'll use a default set without environment variables
+  const defaultEndpoints = createAPIEndpoints({});
+  
+  for (const endpoint of defaultEndpoints) {
     const key = `status:${endpoint.name}`;
     const data = await kv.get(key, { type: 'json' }) as APIStatus[] || [];
     statusData[endpoint.name] = data;

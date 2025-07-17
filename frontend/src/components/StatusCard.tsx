@@ -6,99 +6,51 @@ interface StatusCardProps {
   status: APIStatus;
 }
 
-const StatusCard: React.FC<StatusCardProps> = ({ apiName, status }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'up':
-        return 'bg-green-500';
-      case 'down':
-        return 'bg-red-500';
-      case 'degraded':
-        return 'bg-yellow-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
+// Logo mapping for each API
+const apiLogos: { [key: string]: string } = {
+  OpenAI: 'https://seeklogo.com/images/O/openai-logo-8B9BFEDC26-seeklogo.com.png',
+  GitHub: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+  Stripe: '/logos/stripe.png',
+  HuggingFace: '/logos/huggingface.png',
+  DockerHub: 'https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png',
+  OpenWeatherMap: 'https://openweathermap.org/themes/openweathermap/assets/img/logo_white_cropped.png',
+};
 
-  const getStatusText = (status: string) => {
-    return status.toUpperCase();
-  };
+const StatusCard: React.FC<StatusCardProps> = ({ apiName, status }) => {
+  const logoUrl = apiLogos[apiName];
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">{apiName}</h3>
-        <div className="flex items-center space-x-2">
-          <div className={`w-3 h-3 rounded-full ${getStatusColor(status.status)}`}></div>
-          <span className="text-sm font-medium text-gray-700">
-            {getStatusText(status.status)}
-          </span>
+    <div className="bg-white rounded-lg shadow-sm border p-6">
+      <div className="text-center">
+        <div className="flex items-center justify-center mb-4">
+          {logoUrl ? (
+            <img 
+              src={logoUrl} 
+              alt={`${apiName} logo`} 
+              className="w-8 h-8 max-w-[32px] max-h-[32px] mr-2 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          ) : null}
+          <h3 className="text-lg font-semibold text-gray-900">{apiName}</h3>
         </div>
-      </div>
-
-      <div className="space-y-2 text-sm text-gray-600">
-        <div className="flex justify-between">
-          <span>HTTP Status:</span>
-          <span className={`font-medium ${
-            status.httpStatus >= 200 && status.httpStatus < 300 
-              ? 'text-green-600' 
-              : status.httpStatus >= 500 
-                ? 'text-red-600' 
-                : 'text-yellow-600'
-          }`}>
-            {status.httpStatus}
-          </span>
+        
+        <div className="text-xl font-bold mb-4">
+          {status.status === 'up' && <span title="UP">🟢</span>}
+          {status.status === 'degraded' && <span title="DEGRADED">🟡</span>}
+          {status.status === 'down' && <span title="DOWN">🔴</span>}
         </div>
-
-        <div className="flex justify-between">
-          <span>Latency:</span>
-          <span className={`font-medium ${
-            status.latency < 1000 ? 'text-green-600' : 
-            status.latency < 3000 ? 'text-yellow-600' : 'text-red-600'
-          }`}>
-            {status.latency}ms
-          </span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>Content Valid:</span>
-          <span className={`font-medium ${status.contentValidation.valid ? 'text-green-600' : 'text-red-600'}`}>
-            {status.contentValidation.valid ? '✓' : '✗'}
-          </span>
-        </div>
-
-        {status.rateLimit && (
-          <div className="flex justify-between">
-            <span>Rate Limit:</span>
-            <span className="font-medium text-gray-700">
-              {status.rateLimit.remaining || 'N/A'}/{status.rateLimit.limit || 'N/A'}
-            </span>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-center items-center">
+            <div className="flex flex-col items-center px-6 py-3 border-r border-gray-200">
+              <span className="text-gray-500 text-xs uppercase tracking-wide mb-1">Response</span>
+              <span className="font-semibold text-lg text-gray-900">{status.latency}ms</span>
+            </div>
+            <div className="flex flex-col items-center px-6 py-3">
+              <span className="text-gray-500 text-xs uppercase tracking-wide mb-1">Status</span>
+              <span className="font-semibold text-lg text-gray-900">{status.httpStatus}</span>
+            </div>
           </div>
-        )}
-
-        <div className="flex justify-between">
-          <span>Last Check:</span>
-          <span className="font-medium text-gray-700">
-            {new Date(status.timestamp).toLocaleString()}
-          </span>
         </div>
-
-        {status.error && (
-          <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-xs">
-            Error: {status.error}
-          </div>
-        )}
-
-        {!status.contentValidation.valid && status.contentValidation.errors.length > 0 && (
-          <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-700 text-xs">
-            <div className="font-medium mb-1">Validation Errors:</div>
-            <ul className="list-disc list-inside space-y-1">
-              {status.contentValidation.errors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </div>
   );

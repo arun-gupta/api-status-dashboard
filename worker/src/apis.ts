@@ -1,12 +1,12 @@
 import { APIEndpoint } from './types';
 
-export const API_ENDPOINTS: APIEndpoint[] = [
+export const createAPIEndpoints = (env: any): APIEndpoint[] => [
   {
     name: 'OpenAI',
     url: 'https://api.openai.com/v1/models',
     method: 'GET',
     headers: {
-      'Authorization': 'Bearer sk-test', // This will fail but we can detect the response
+      'Authorization': `Bearer ${env.OPENAI_API_KEY || 'sk-test-placeholder'}`,
     },
     expectedFields: ['object', 'data'],
     timeout: 10000,
@@ -23,7 +23,7 @@ export const API_ENDPOINTS: APIEndpoint[] = [
     url: 'https://api.stripe.com/v1/balance',
     method: 'GET',
     headers: {
-      'Authorization': 'Bearer sk_test_', // This will fail but we can detect the response
+      'Authorization': `Bearer ${env.STRIPE_API_KEY || 'sk_test_placeholder'}`,
     },
     expectedFields: ['object', 'available'],
     timeout: 10000,
