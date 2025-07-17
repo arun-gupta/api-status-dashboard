@@ -69,17 +69,23 @@ npm install
 
 ### 2. Configure Cloudflare Worker
 
-1. **Create KV Namespace**:
+1. **Login to Cloudflare** (Required for KV namespace creation):
    ```bash
    cd worker
+   wrangler login
+   ```
+   This will open your browser for OAuth authentication with Cloudflare. You'll need to authorize Wrangler to access your Cloudflare account.
+
+2. **Create KV Namespace**:
+   ```bash
    wrangler kv:namespace create API_STATUS_LOGS
    wrangler kv:namespace create API_STATUS_LOGS --preview
    ```
 
-2. **Update wrangler.toml**:
-   Replace the placeholder KV namespace IDs in `worker/wrangler.toml` with the actual IDs from step 1.
+3. **Update wrangler.toml**:
+   Replace the placeholder KV namespace IDs in `worker/wrangler.toml` with the actual IDs from step 2.
 
-3. **Deploy the Worker**:
+4. **Deploy the Worker**:
    ```bash
    wrangler deploy
    ```
